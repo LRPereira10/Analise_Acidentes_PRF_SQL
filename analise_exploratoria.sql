@@ -99,3 +99,30 @@ GROUP BY
 ORDER BY
     total_acidentes DESC
 LIMIT 5;
+
+
+-- ==============================================================================
+-- FASE 2: CONSULTAS AVANÇADAS COM JOIN (MODELAGEM RELACIONAL)
+-- ==============================================================================
+
+-- 8. Taxa de Letalidade por Tipo de Veículo (Cruzando Ocorrências e Veículos)
+SELECT 
+    p.tipo_veiculo,
+    COUNT(DISTINCT a.id) AS total_acidentes,
+    SUM(NULLIF(TRIM(p.mortos), '')::INTEGER) AS total_obitos,
+    ROUND((SUM(NULLIF(TRIM(p.mortos), '')::INTEGER) * 100.0 / COUNT(DISTINCT a.id)), 2) AS taxa_letalidade_pct
+FROM 
+    acidentes_prf_2023 AS a
+INNER JOIN 
+    acid_pessoas_2023 AS p
+ON 
+    TRIM(a.id) = TRIM(p.id)
+WHERE 
+    p.tipo_veiculo != 'NA' -- Filtro para ignorar registros de pedestres ou dados não informados
+GROUP BY 
+    p.tipo_veiculo
+HAVING 
+    COUNT(DISTINCT a.id) >= 100
+ORDER BY 
+    taxa_letalidade_pct DESC
+LIMIT 5;
